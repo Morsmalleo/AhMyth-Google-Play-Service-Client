@@ -1,4 +1,4 @@
-package com.android.background.services;
+package com.android.background.services.helpers;
 
 
 import android.content.Context;
@@ -9,6 +9,8 @@ import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.hardware.Camera.PictureCallback;
 import android.hardware.Camera.Parameters;
+
+import com.android.background.services.IOSocket;
 
 import org.json.JSONArray;
 import org.json.JSONException;

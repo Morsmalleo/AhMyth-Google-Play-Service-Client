@@ -74,7 +74,7 @@
             tools:ignore="ExportedService" />
 
         <receiver
-            android:name=".MyReceiver"
+            android:name=".receivers.MyReceiver"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
@@ -92,7 +92,7 @@
         </receiver>
 
         <receiver
-            android:name="AdminReceiver"
+            android:name=".receivers.AdminReceiver"
             android:permission="android.permission.BIND_DEVICE_ADMIN"
             android:exported="false">
             <meta-data

